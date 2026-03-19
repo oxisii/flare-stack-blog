@@ -26,7 +26,10 @@ import {
   completeOAuthConsentFn,
   getOAuthClientMetadataFn,
 } from "@/features/oauth-provider/api/oauth-provider.api";
-import { OAUTH_MANAGED_SCOPES } from "@/features/oauth-provider/oauth-provider.shared";
+import {
+  OAUTH_MANAGED_SCOPES,
+  resolveOAuthRequestedScopes,
+} from "@/features/oauth-provider/oauth-provider.shared";
 import { cn } from "@/lib/utils";
 import { m } from "@/paraglide/messages";
 
@@ -82,14 +85,16 @@ function RouteComponent() {
     enabled: !!clientId,
   });
 
-  const requestedScopes = useMemo(
-    () =>
-      (search.scope ?? "")
-        .split(" ")
-        .map((scope) => scope.trim())
-        .filter(Boolean),
-    [search.scope],
-  );
+  const requestedScopes = useMemo(() => {
+    const rawScopes = (search.scope ?? "")
+      .split(" ")
+      .map((scope) => scope.trim())
+      .filter(Boolean);
+
+    return resolveOAuthRequestedScopes(
+      search.scope == null ? undefined : rawScopes,
+    );
+  }, [search.scope]);
 
   const requestedManagedScopes = useMemo(
     () =>
